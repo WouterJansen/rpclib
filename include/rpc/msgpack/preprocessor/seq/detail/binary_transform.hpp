@@ -12,11 +12,11 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_DETAIL_BINARY_TRANSFORM_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_DETAIL_BINARY_TRANSFORM_HPP
 #
-# include <rpc/msgpack/preprocessor/cat.hpp>
-# include <rpc/msgpack/preprocessor/config/config.hpp>
-# include <rpc/msgpack/preprocessor/tuple/eat.hpp>
-# include <rpc/msgpack/preprocessor/tuple/rem.hpp>
-# include <rpc/msgpack/preprocessor/variadic/detail/is_single_return.hpp>
+# include <msgpack/preprocessor/cat.hpp>
+# include <msgpack/preprocessor/config/config.hpp>
+# include <msgpack/preprocessor/tuple/eat.hpp>
+# include <msgpack/preprocessor/tuple/rem.hpp>
+# include <msgpack/preprocessor/variadic/detail/is_single_return.hpp>
 #
 # /* MSGPACK_PP_SEQ_BINARY_TRANSFORM */
 #
@@ -30,14 +30,13 @@
 # endif
 # if MSGPACK_PP_VARIADICS
 #    if MSGPACK_PP_VARIADICS_MSVC
-#		define MSGPACK_PP_SEQ_BINARY_TRANSFORM_GET_REM(...) \
-			MSGPACK_PP_VARIADIC_IS_SINGLE_RETURN(MSGPACK_PP_REM_CAT,MSGPACK_PP_REM,__VA_ARGS__) \
-		/**/
+#		define MSGPACK_PP_SEQ_BINARY_TRANSFORM_REM(data) data
+#       define MSGPACK_PP_SEQ_BINARY_TRANSFORM_A(...) (MSGPACK_PP_SEQ_BINARY_TRANSFORM_REM, __VA_ARGS__)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_B
+#       define MSGPACK_PP_SEQ_BINARY_TRANSFORM_B(...) (MSGPACK_PP_SEQ_BINARY_TRANSFORM_REM, __VA_ARGS__)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_A
 #	 else
-#		define MSGPACK_PP_SEQ_BINARY_TRANSFORM_GET_REM(...) MSGPACK_PP_REM
+#       define MSGPACK_PP_SEQ_BINARY_TRANSFORM_A(...) (MSGPACK_PP_REM, __VA_ARGS__)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_B
+#       define MSGPACK_PP_SEQ_BINARY_TRANSFORM_B(...) (MSGPACK_PP_REM, __VA_ARGS__)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_A
 #	 endif
-#    define MSGPACK_PP_SEQ_BINARY_TRANSFORM_A(...) (MSGPACK_PP_SEQ_BINARY_TRANSFORM_GET_REM(__VA_ARGS__), __VA_ARGS__)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_B
-#    define MSGPACK_PP_SEQ_BINARY_TRANSFORM_B(...) (MSGPACK_PP_SEQ_BINARY_TRANSFORM_GET_REM(__VA_ARGS__), __VA_ARGS__)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_A
 # else
 #    define MSGPACK_PP_SEQ_BINARY_TRANSFORM_A(e) (MSGPACK_PP_REM, e)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_B
 #    define MSGPACK_PP_SEQ_BINARY_TRANSFORM_B(e) (MSGPACK_PP_REM, e)() MSGPACK_PP_SEQ_BINARY_TRANSFORM_A

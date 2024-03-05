@@ -10,9 +10,10 @@
 #ifndef MSGPACK_V1_TYPE_SET_HPP
 #define MSGPACK_V1_TYPE_SET_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
-#include "rpc/msgpack/adaptor/check_container_size.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/cpp_version.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/adaptor/check_container_size.hpp"
 
 #include <set>
 
@@ -54,7 +55,7 @@ struct convert<std::set<T, Compare, Alloc> > {
             --p;
             tmp.insert(p->as<T>());
         }
-#if __cplusplus >= 201103L
+#if MSGPACK_CPP_VERSION >= 201103L
         v = std::move(tmp);
 #else
         tmp.swap(v);
@@ -131,7 +132,7 @@ struct convert<std::multiset<T, Compare, Alloc> > {
             --p;
             tmp.insert(p->as<T>());
         }
-#if __cplusplus >= 201103L
+#if MSGPACK_CPP_VERSION >= 201103L
         v = std::move(tmp);
 #else
         tmp.swap(v);

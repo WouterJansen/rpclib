@@ -150,6 +150,7 @@ target_compile_definitions(${PROJECT_NAME}
   PUBLIC
     "${RPCLIB_OS_DEF}"
     "RPCLIB_MSGPACK=clmdep_msgpack"
+    "MSGPACK_NO_BOOST"
   )
 
 if(RPCLIB_ENABLE_LOGGING)
@@ -173,7 +174,9 @@ endif()
 target_include_directories(
   ${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>/rpc
   $<INSTALL_INTERFACE:include>
+  $<INSTALL_INTERFACE:include>/rpc
   )
 target_include_directories(
   ${PROJECT_NAME} SYSTEM

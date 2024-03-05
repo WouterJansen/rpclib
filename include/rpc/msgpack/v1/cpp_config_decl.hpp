@@ -10,18 +10,8 @@
 #ifndef MSGPACK_V1_CPP_CONFIG_DECL_HPP
 #define MSGPACK_V1_CPP_CONFIG_DECL_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-
-#if !defined(MSGPACK_USE_CPP03)
-# if defined(_MSC_VER)
-#  if _MSC_VER < 1900
-#    define MSGPACK_USE_CPP03
-#  endif
-# elif (__cplusplus < 201103L)
-#  define MSGPACK_USE_CPP03
-# endif
-#endif // MSGPACK_USE_CPP03
-
+#include "msgpack/cpp_version.hpp"
+#include "msgpack/versioning.hpp"
 
 #if defined(MSGPACK_USE_CPP03)
 
@@ -127,5 +117,11 @@ MSGPACK_API_VERSION_NAMESPACE(v1) {
 
 
 #endif // MSGPACK_USE_CPP03
+
+#if defined(__has_include)
+#define MSGPACK_HAS_INCLUDE __has_include
+#else  // defined(__has_include)
+#define MSGPACK_HAS_INCLUDE(header) 0
+#endif // defined(__has_include)
 
 #endif // MSGPACK_V1_CPP_CONFIG_DECL_HPP

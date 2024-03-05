@@ -10,12 +10,13 @@
 #ifndef MSGPACK_V1_PACK_HPP
 #define MSGPACK_V1_PACK_HPP
 
-#include "rpc/msgpack/v1/pack_decl.hpp"
+#include "msgpack/v1/pack_decl.hpp"
 
 #include <stdexcept>
 #include <limits>
 #include <cstring>
 #include <climits>
+#include <ostream>
 
 namespace clmdep_msgpack {
 
@@ -270,6 +271,20 @@ public:
      * @return The reference of `*this`.
      */
     packer<Stream>& pack_char(char d);
+
+    /// Packing wchar_t
+    /**
+     * The byte size of the packed data depends on `d`.
+     * If `d` is zero or positive, the packed type is positive fixnum, or uint*,
+     * else the packed type is negative fixnum, or int*
+     * The minimum byte size expression is used.
+     * See https://github.com/msgpack/msgpack/blob/master/spec.md#formats-int
+     *
+     * @param d a packing object.
+     *
+     * @return The reference of `*this`.
+     */
+    packer<Stream>& pack_wchar(wchar_t d);
 
     /// Packing signed char
     /**
@@ -604,7 +619,15 @@ private:
     void pack_imp_int64(T d);
 
     void append_buffer(const char* buf, size_t len)
-        { m_stream.write(buf, len); }
+    {
+        append_buffer(&Stream::write, buf, len);
+    }
+
+    template <typename Ret, typename Cls, typename SizeType>
+    void append_buffer(Ret (Cls::*)(const char*, SizeType), const char* buf, size_t len)
+    {
+        m_stream.write(buf, static_cast<SizeType>(len));
+    }
 
 private:
     Stream& m_stream;
@@ -781,7 +804,7 @@ template <typename Stream>
 inline packer<Stream>& packer<Stream>::pack_fix_int16(int16_t d)
 {
     char buf[3];
-    buf[0] = static_cast<char>(0xd1u); _msgpack_store16(&buf[1], d);
+    buf[0] = static_cast<char>(0xd1u); _msgpack_store16(&buf[1], (uint16_t)d);
     append_buffer(buf, 3);
     return *this;
 }
@@ -790,7 +813,7 @@ template <typename Stream>
 inline packer<Stream>& packer<Stream>::pack_fix_int32(int32_t d)
 {
     char buf[5];
-    buf[0] = static_cast<char>(0xd2u); _msgpack_store32(&buf[1], d);
+    buf[0] = static_cast<char>(0xd2u); _msgpack_store32(&buf[1], (uint32_t)d);
     append_buffer(buf, 5);
     return *this;
 }
@@ -817,6 +840,18 @@ inline packer<Stream>& packer<Stream>::pack_char(char d)
 #else
 #error CHAR_MIN is not defined
 #endif
+    return *this;
+}
+
+template <typename Stream>
+inline packer<Stream>& packer<Stream>::pack_wchar(wchar_t d)
+{
+    if (d < 0) {
+        pack_imp_int64(static_cast<int64_t>(d));
+    }
+    else {
+        pack_imp_uint64(static_cast<uint64_t>(d));
+    }
     return *this;
 }
 
@@ -1103,6 +1138,17 @@ inline packer<Stream>& packer<Stream>::pack_unsigned_long_long(unsigned long lon
 template <typename Stream>
 inline packer<Stream>& packer<Stream>::pack_float(float d)
 {
+    if(d == d) { // check for nan
+        // compare d to limits to avoid undefined behaviour
+        if(d >= 0 && d <= float(std::numeric_limits<uint64_t>::max()) && d == float(uint64_t(d))) {
+            pack_imp_uint64(uint64_t(d));
+            return *this;
+        } else if(d < 0 && d >= float(std::numeric_limits<int64_t>::min()) && d == float(int64_t(d))) {
+            pack_imp_int64(int64_t(d));
+            return *this;
+        }
+    }
+
     union { float f; uint32_t i; } mem;
     mem.f = d;
     char buf[5];
@@ -1114,6 +1160,17 @@ inline packer<Stream>& packer<Stream>::pack_float(float d)
 template <typename Stream>
 inline packer<Stream>& packer<Stream>::pack_double(double d)
 {
+    if(d == d) { // check for nan
+        // compare d to limits to avoid undefined behaviour
+        if(d >= 0 && d <= double(std::numeric_limits<uint64_t>::max()) && d == double(uint64_t(d))) {
+            pack_imp_uint64(uint64_t(d));
+            return *this;
+        } else if(d < 0 && d >= double(std::numeric_limits<int64_t>::min()) && d == double(int64_t(d))) {
+            pack_imp_int64(int64_t(d));
+            return *this;
+        }
+    }
+
     union { double f; uint64_t i; } mem;
     mem.f = d;
     char buf[9];
@@ -1202,7 +1259,7 @@ inline packer<Stream>& packer<Stream>::pack_str(uint32_t l)
         append_buffer(&buf, 1);
     } else if(l < 256) {
         char buf[2];
-        buf[0] = static_cast<char>(0xd9u); buf[1] = static_cast<uint8_t>(l);
+        buf[0] = static_cast<char>(0xd9u); buf[1] = static_cast<char>(l);
         append_buffer(buf, 2);
     } else if(l < 65536) {
         char buf[3];
@@ -1256,7 +1313,7 @@ inline packer<Stream>& packer<Stream>::pack_bin(uint32_t l)
 {
     if(l < 256) {
         char buf[2];
-        buf[0] = static_cast<char>(0xc4u); buf[1] = static_cast<uint8_t>(l);
+        buf[0] = static_cast<char>(0xc4u); buf[1] = static_cast<char>(l);
         append_buffer(buf, 2);
     } else if(l < 65536) {
         char buf[3];

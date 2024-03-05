@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V2_CPP11_ZONE_DECL_HPP
 #define MSGPACK_V2_CPP11_ZONE_DECL_HPP
 
-#include "rpc/msgpack/v1/zone_decl.hpp"
+#include "msgpack/v1/zone_decl.hpp"
 
 namespace clmdep_msgpack {
 

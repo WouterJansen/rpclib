@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V2_TYPE_INT_DECL_HPP
 #define MSGPACK_V2_TYPE_INT_DECL_HPP
 
-#include "rpc/msgpack/v1/adaptor/int_decl.hpp"
+#include "msgpack/v1/adaptor/int_decl.hpp"
 
 namespace clmdep_msgpack {
 
@@ -30,7 +30,7 @@ struct is_signed;
 
 
 template <bool Signed>
-struct object_char_sign;
+struct object_sign;
 
 //using v1::type::detail::convert_integer_sign;
 

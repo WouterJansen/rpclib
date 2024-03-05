@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V2_TYPE_EXT_DECL_HPP
 #define MSGPACK_V2_TYPE_EXT_DECL_HPP
 
-#include "rpc/msgpack/v1/adaptor/ext_decl.hpp"
+#include "msgpack/v1/adaptor/ext_decl.hpp"
 
 namespace clmdep_msgpack {
 

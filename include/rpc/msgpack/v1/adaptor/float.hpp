@@ -10,8 +10,8 @@
 #ifndef MSGPACK_V1_TYPE_FLOAT_HPP
 #define MSGPACK_V1_TYPE_FLOAT_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/object_fwd.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/object_fwd.hpp"
 #include <vector>
 
 namespace clmdep_msgpack {

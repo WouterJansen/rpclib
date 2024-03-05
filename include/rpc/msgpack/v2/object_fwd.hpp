@@ -11,8 +11,8 @@
 #ifndef MSGPACK_V2_OBJECT_FWD_HPP
 #define MSGPACK_V2_OBJECT_FWD_HPP
 
-#include "rpc/msgpack/v2/object_fwd_decl.hpp"
-#include "rpc/msgpack/object_fwd.hpp"
+#include "msgpack/v2/object_fwd_decl.hpp"
+#include "msgpack/object_fwd.hpp"
 
 namespace clmdep_msgpack {
 
@@ -79,7 +79,7 @@ template <typename T>
 struct has_as {
 private:
     template <typename U>
-    static auto check(U*) ->
+    static auto check_(U*) ->
         typename std::enable_if<
             // check v2 specialization
             std::is_same<
@@ -91,10 +91,10 @@ private:
             v1::has_as<U>::value,
             std::true_type
         >::type;
-    template <typename>
-    static std::false_type check(...);
+    template <typename...>
+    static std::false_type check_(...);
 public:
-    using type = decltype(check<T>(MSGPACK_NULLPTR));
+    using type = decltype(check_<T>(MSGPACK_NULLPTR));
     static constexpr bool value = type::value;
 };
 

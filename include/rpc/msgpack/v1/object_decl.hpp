@@ -10,10 +10,10 @@
 #ifndef MSGPACK_V1_OBJECT_DECL_HPP
 #define MSGPACK_V1_OBJECT_DECL_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/pack.hpp"
-#include "rpc/msgpack/zone.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/pack.hpp"
+#include "msgpack/zone.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
 
 #include <cstring>
 #include <stdexcept>
@@ -81,7 +81,12 @@ bool operator!=(const clmdep_msgpack::object& x, const T& y);
 template <typename T>
 bool operator!=(const T& y, const clmdep_msgpack::object& x);
 
-void operator<< (clmdep_msgpack::object& o, const msgpack_object& v);
+class object_parser;
+
+template <typename Stream>
+struct object_pack_visitor;
+
+struct object_stringize_visitor;
 
 // obsolete
 template <typename T>
@@ -104,7 +109,7 @@ clmdep_msgpack::packer<Stream>& operator<< (clmdep_msgpack::packer<Stream>& o, c
 template <typename Stream>
 clmdep_msgpack::packer<Stream>& operator<< (clmdep_msgpack::packer<Stream>& o, const clmdep_msgpack::object::with_zone& v);
 
-std::ostream& operator<< (std::ostream& s, const clmdep_msgpack::object& o);
+std::ostream& operator<< (std::ostream& s, const clmdep_msgpack::object& v);
 
 /// @cond
 }  // MSGPACK_API_VERSION_NAMESPACE(v1)

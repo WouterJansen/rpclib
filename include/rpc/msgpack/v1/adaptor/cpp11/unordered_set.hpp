@@ -10,9 +10,10 @@
 #ifndef MSGPACK_V1_TYPE_CPP11_UNORDERED_SET_HPP
 #define MSGPACK_V1_TYPE_CPP11_UNORDERED_SET_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
-#include "rpc/msgpack/adaptor/check_container_size.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/object.hpp"
+#include "msgpack/adaptor/check_container_size.hpp"
 
 #include <unordered_set>
 

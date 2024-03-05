@@ -10,7 +10,9 @@
 #ifndef MSGPACK_V1_CPP_CONFIG_HPP
 #define MSGPACK_V1_CPP_CONFIG_HPP
 
-#include "rpc/msgpack/cpp_config_decl.hpp"
+#include "msgpack/cpp_config_decl.hpp"
+#include "msgpack/cpp_version.hpp"
+#include "msgpack/versioning.hpp"
 
 #if defined(MSGPACK_USE_CPP03)
 
@@ -126,10 +128,14 @@ template<class T> struct is_pointer : detail::is_pointer_helper<typename remove_
 
 #endif // MSGPACK_USE_CPP03
 
-#if __cplusplus >= 201402L
+#if MSGPACK_CPP_VERSION >= 201402L
+#if defined(_MSC_VER)
+#define MSGPACK_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
 #define MSGPACK_DEPRECATED(msg) [[deprecated(msg)]]
-#else  // __cplusplus >= 201402L
+#endif
+#else  // MSGPACK_CPP_VERSION >= 201402L
 #define MSGPACK_DEPRECATED(msg)
-#endif // __cplusplus >= 201402L
+#endif // MSGPACK_CPP_VERSION >= 201402L
 
 #endif // MSGPACK_V1_CPP_CONFIG_HPP

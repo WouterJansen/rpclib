@@ -10,9 +10,9 @@
 #ifndef MSGPACK_V1_ADAPTOR_BASE_DECL_HPP
 #define MSGPACK_V1_ADAPTOR_BASE_DECL_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/object_fwd.hpp"
-#include "rpc/msgpack/pack.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/object_fwd.hpp"
+#include "msgpack/pack.hpp"
 
 namespace clmdep_msgpack {
 
@@ -58,7 +58,6 @@ typename clmdep_msgpack::enable_if<
     clmdep_msgpack::packer<Stream>&
 >::type
 operator<< (clmdep_msgpack::packer<Stream>& o, T const& v);
-
 template <typename Stream, typename T, std::size_t N>
 clmdep_msgpack::packer<Stream>& operator<< (clmdep_msgpack::packer<Stream>& o, const T(&v)[N]);
 

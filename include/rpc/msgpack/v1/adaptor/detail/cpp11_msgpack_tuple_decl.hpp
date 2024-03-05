@@ -10,9 +10,9 @@
 #ifndef MSGPACK_V1_CPP11_MSGPACK_TUPLE_DECL_HPP
 #define MSGPACK_V1_CPP11_MSGPACK_TUPLE_DECL_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/object_fwd.hpp"
-#include "rpc/msgpack/meta.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/object_fwd.hpp"
+#include "msgpack/meta.hpp"
 
 #include <tuple>
 
@@ -31,7 +31,7 @@ namespace type {
     using std::ignore;
     using std::swap;
 
-    template< class... Types >
+    template <class... Types>
     class tuple : public std::tuple<Types...> {
     public:
         using base = std::tuple<Types...>;
@@ -61,17 +61,17 @@ namespace type {
             return *this;
         }
 
-        template< std::size_t I>
-        typename tuple_element<I, base >::type&
-        get() & { return std::get<I>(*this); }
+        template<std::size_t I>
+        typename tuple_element<I, base>::type&
+        get() & noexcept { return std::get<I>(static_cast<base&>(*this)); }
 
-        template< std::size_t I>
-        typename tuple_element<I, base >::type const&
-        get() const& { return std::get<I>(*this); }
+        template<std::size_t I>
+        typename tuple_element<I, base>::type const&
+        get() const& noexcept { return std::get<I>(static_cast<base const&>(*this)); }
 
-        template< std::size_t I>
-        typename tuple_element<I, base >::type&&
-        get() && { return std::get<I>(*this); }
+        template<std::size_t I>
+        typename tuple_element<I, base>::type&&
+        get() && noexcept { return std::get<I>(static_cast<base&&>(*this)); }
 
         std::size_t size() const { return sizeof...(Types); }
     };

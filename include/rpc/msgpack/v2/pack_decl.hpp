@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V2_PACK_DECL_HPP
 #define MSGPACK_V2_PACK_DECL_HPP
 
-#include "rpc/msgpack/v1/pack_decl.hpp"
+#include "msgpack/v1/pack_decl.hpp"
 
 namespace clmdep_msgpack {
 
@@ -21,6 +21,7 @@ MSGPACK_API_VERSION_NAMESPACE(v2) {
 using v1::packer;
 
 using v1::pack;
+
 
 #if MSGPACK_ENDIAN_LITTLE_BYTE
 

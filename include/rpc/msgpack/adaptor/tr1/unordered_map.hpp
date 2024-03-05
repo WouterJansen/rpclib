@@ -10,9 +10,10 @@
 #ifndef MSGPACK_TYPE_TR1_UNORDERED_MAP_HPP
 #define MSGPACK_TYPE_TR1_UNORDERED_MAP_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
-#include "rpc/msgpack/adaptor/check_container_size.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/object.hpp"
+#include "msgpack/adaptor/check_container_size.hpp"
 
 #if defined(_LIBCPP_VERSION) || (_MSC_VER >= 1700)
 

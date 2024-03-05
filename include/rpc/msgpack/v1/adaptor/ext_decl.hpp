@@ -10,11 +10,11 @@
 #ifndef MSGPACK_V1_TYPE_EXT_DECL_HPP
 #define MSGPACK_V1_TYPE_EXT_DECL_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/object.hpp"
 #include <cstring>
 #include <string>
-#include <cassert>
 
 namespace clmdep_msgpack {
 

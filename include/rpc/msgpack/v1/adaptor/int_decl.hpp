@@ -10,8 +10,9 @@
 #ifndef MSGPACK_V1_TYPE_INT_DECL_HPP
 #define MSGPACK_V1_TYPE_INT_DECL_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/object.hpp"
 #include <limits>
 
 namespace clmdep_msgpack {
@@ -33,9 +34,10 @@ template <typename T>
 T convert_integer(clmdep_msgpack::object const& o);
 
 template <bool Signed>
-struct object_char_sign;
+struct object_sign;
 
-void object_char(clmdep_msgpack::object& o, char v);
+template <typename T>
+void object_char(clmdep_msgpack::object& o, T v);
 
 }  // namespace detail
 }  // namespace type

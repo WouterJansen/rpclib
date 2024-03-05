@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V1_TYPE_RAW_HPP
 #define MSGPACK_V1_TYPE_RAW_HPP
 
-#include "rpc/msgpack/v1/adaptor/raw_decl.hpp"
+#include "msgpack/v1/adaptor/raw_decl.hpp"
 
 #include <cstring>
 #include <string>
@@ -34,7 +34,7 @@ struct raw_ref {
 
     bool operator== (const raw_ref& x) const
     {
-        return size == x.size && std::memcmp(ptr, x.ptr, size) == 0;
+        return size == x.size && (size == 0 || std::memcmp(ptr, x.ptr, size) == 0);
     }
 
     bool operator!= (const raw_ref& x) const
@@ -44,13 +44,13 @@ struct raw_ref {
 
     bool operator< (const raw_ref& x) const
     {
-        if(size == x.size) { return std::memcmp(ptr, x.ptr, size) < 0; }
+        if(size == x.size) { return (size == 0 ? false : std::memcmp(ptr, x.ptr, size) < 0); }
         else { return size < x.size; }
     }
 
     bool operator> (const raw_ref& x) const
     {
-        if(size == x.size) { return std::memcmp(ptr, x.ptr, size) > 0; }
+        if(size == x.size) { return (size == 0 ? false : std::memcmp(ptr, x.ptr, size) > 0); }
         else { return size > x.size; }
     }
 };

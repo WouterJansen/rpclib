@@ -8,8 +8,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_OS_LINUX_H
 #define MSGPACK_PREDEF_OS_LINUX_H
 
-#include <rpc/msgpack/predef/version_number.h>
-#include <rpc/msgpack/predef/make.h>
+#include <msgpack/predef/version_number.h>
+#include <msgpack/predef/make.h>
 
 /*`
 [heading `MSGPACK_OS_LINUX`]
@@ -27,7 +27,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 #define MSGPACK_OS_LINUX MSGPACK_VERSION_NUMBER_NOT_AVAILABLE
 
 #if !defined(MSGPACK_PREDEF_DETAIL_OS_DETECTED) && ( \
-    defined(linux) || defined(__linux) \
+    defined(linux) || defined(__linux) || defined(__linux__) \
     )
 #   undef MSGPACK_OS_LINUX
 #   define MSGPACK_OS_LINUX MSGPACK_VERSION_NUMBER_AVAILABLE
@@ -35,12 +35,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 #if MSGPACK_OS_LINUX
 #   define MSGPACK_OS_LINUX_AVAILABLE
-#   include <rpc/msgpack/predef/detail/os_detected.h>
+#   include <msgpack/predef/detail/os_detected.h>
 #endif
 
 #define MSGPACK_OS_LINUX_NAME "Linux"
 
 #endif
 
-#include <rpc/msgpack/predef/detail/test.h>
+#include <msgpack/predef/detail/test.h>
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_OS_LINUX,MSGPACK_OS_LINUX_NAME)

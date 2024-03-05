@@ -10,10 +10,10 @@
 #ifndef MSGPACK_V1_CPP03_DEFINE_ARRAY_HPP
 #define MSGPACK_V1_CPP03_DEFINE_ARRAY_HPP
 
-#include "rpc/msgpack/v1/adaptor/detail/cpp03_define_array_decl.hpp"
-#include "rpc/msgpack/adaptor/msgpack_tuple.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
-#include "rpc/msgpack/object_fwd.hpp"
+#include "msgpack/v1/adaptor/detail/cpp03_define_array_decl.hpp"
+#include "msgpack/adaptor/msgpack_tuple.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/object_fwd.hpp"
 
 namespace clmdep_msgpack {
 /// @cond

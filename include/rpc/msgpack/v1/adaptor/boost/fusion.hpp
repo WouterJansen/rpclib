@@ -10,22 +10,35 @@
 #ifndef MSGPACK_V1_TYPE_BOOST_FUSION_HPP
 #define MSGPACK_V1_TYPE_BOOST_FUSION_HPP
 
-#include "rpc/msgpack/versioning.hpp"
-#include "rpc/msgpack/adaptor/adaptor_base.hpp"
-#include "rpc/msgpack/adaptor/check_container_size.hpp"
-#include "rpc/msgpack/meta.hpp"
+#include "msgpack/versioning.hpp"
+#include "msgpack/adaptor/adaptor_base.hpp"
+#include "msgpack/object.hpp"
+#include "msgpack/adaptor/check_container_size.hpp"
+#include "msgpack/meta.hpp"
 
-#include "rpc/msgpack/adaptor/pair.hpp"
+#include "msgpack/adaptor/pair.hpp"
 
 #if !defined (MSGPACK_USE_CPP03)
-#include "rpc/msgpack/adaptor/cpp11/tuple.hpp"
+#include "msgpack/adaptor/cpp11/tuple.hpp"
 #endif // #if !defined (MSGPACK_USE_CPP03)
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif // defined(__GNUC__)
 
 #include <boost/fusion/support/is_sequence.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
 #include <boost/fusion/include/mpl.hpp>
+
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif // defined(__GNUC__)
+
+
 #include <boost/mpl/size.hpp>
 
 namespace clmdep_msgpack {
@@ -111,7 +124,7 @@ struct as<
     template<std::size_t... Is, typename U>
     static std::tuple<
         typename std::remove_reference<
-            typename boost::fusion::result_of::at_c<T, Is>::type
+            typename boost::fusion::result_of::at_c<T, static_cast<int>(Is)>::type
         >::type...>
     to_tuple(U const& u, seq<Is...>) {
         return std::make_tuple(boost::fusion::at_c<Is>(u)...);

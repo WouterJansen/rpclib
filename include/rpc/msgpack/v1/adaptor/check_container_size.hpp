@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V1_CHECK_CONTAINER_SIZE_HPP
 #define MSGPACK_V1_CHECK_CONTAINER_SIZE_HPP
 
-#include "rpc/msgpack/v1/adaptor/check_container_size_decl.hpp"
+#include "msgpack/v1/adaptor/check_container_size_decl.hpp"
 #include <stdexcept>
 
 namespace clmdep_msgpack {
@@ -53,7 +53,7 @@ inline void check_container_size_for_ext<4>(std::size_t size) {
 
 template <typename T>
 inline uint32_t checked_get_container_size(T size) {
-    detail::check_container_size<sizeof(T)>(size);
+    detail::check_container_size<sizeof(T)>(static_cast<std::size_t>(size));
     return static_cast<uint32_t>(size);
 }
 

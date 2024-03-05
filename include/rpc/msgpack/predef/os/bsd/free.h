@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_OS_BSD_FREE_H
 #define MSGPACK_PREDEF_OS_BSD_FREE_H
 
-#include <rpc/msgpack/predef/os/bsd.h>
+#include <msgpack/predef/os/bsd.h>
 
 /*`
 [heading `MSGPACK_OS_BSD_FREE`]
@@ -34,13 +34,20 @@ http://www.boost.org/LICENSE_1_0.txt)
 #       define MSGPACK_OS_BSD_AVAILABLE
 #   endif
 #   undef MSGPACK_OS_BSD_FREE
+#   include <sys/param.h>
 #   if defined(__FreeBSD_version)
-#       if __FreeBSD_version < 500000
+#       if __FreeBSD_version == 491000
 #           define MSGPACK_OS_BSD_FREE \
-                MSGPACK_PREDEF_MAKE_10_VRP000(__FreeBSD_version)
+                MSGPACK_VERSION_NUMBER(4, 10, 0)
+#       elif __FreeBSD_version == 492000
+#           define MSGPACK_OS_BSD_FREE \
+                MSGPACK_VERSION_NUMBER(4, 11, 0)
+#       elif __FreeBSD_version < 500000
+#           define MSGPACK_OS_BSD_FREE \
+                MSGPACK_PREDEF_MAKE_10_VRPPPP(__FreeBSD_version)
 #       else
 #           define MSGPACK_OS_BSD_FREE \
-                MSGPACK_PREDEF_MAKE_10_VRR000(__FreeBSD_version)
+                MSGPACK_PREDEF_MAKE_10_VVRRPPP(__FreeBSD_version)
 #       endif
 #   else
 #       define MSGPACK_OS_BSD_FREE MSGPACK_VERSION_NUMBER_AVAILABLE
@@ -49,12 +56,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 #if MSGPACK_OS_BSD_FREE
 #   define MSGPACK_OS_BSD_FREE_AVAILABLE
-#   include <rpc/msgpack/predef/detail/os_detected.h>
+#   include <msgpack/predef/detail/os_detected.h>
 #endif
 
 #define MSGPACK_OS_BSD_FREE_NAME "Free BSD"
 
 #endif
 
-#include <rpc/msgpack/predef/detail/test.h>
+#include <msgpack/predef/detail/test.h>
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_OS_BSD_FREE,MSGPACK_OS_BSD_FREE_NAME)
