@@ -22,21 +22,30 @@ using namespace RPCLIB_ASIO;
 namespace rpc {
 
 struct server::impl {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    impl(server *parent, std::string const &socketName)
+#else
     impl(server *parent, std::string const &address, uint16_t port)
+#endif
         : parent_(parent),
           io_(),
           acceptor_(io_),
           socket_(io_),
           suppress_exceptions_(false) {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+        auto ep = local::basic_endpoint<local::stream_protocol>(socketName);
+#else
         auto ep = tcp::endpoint(ip::address::from_string(address), port);
+#endif
         acceptor_.open(ep.protocol());
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(RPCLIB_USE_LOCAL_SOCKETS)
         acceptor_.set_option(tcp::acceptor::reuse_address(true));
-#endif // !_WIN32
+#endif // !_WIN32 && !RPCLIB_USE_LOCAL_SOCKETS
         acceptor_.bind(ep);
         acceptor_.listen();
     }
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
     impl(server *parent, uint16_t port)
         : parent_(parent),
           io_(),
@@ -51,6 +60,7 @@ struct server::impl {
         acceptor_.bind(ep);
         acceptor_.listen();
     }
+#endif
 
     void start_accept() {
         acceptor_.async_accept(socket_, [this](std::error_code ec) {
@@ -93,12 +103,19 @@ struct server::impl {
         loop_workers_.join_all();
     }
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
     unsigned short port() const { return acceptor_.local_endpoint().port(); }
+#endif
 
     server *parent_;
     io_service io_;
-    ip::tcp::acceptor acceptor_;
-    ip::tcp::socket socket_;
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    using Protocol = local::stream_protocol;
+#else
+    using Protocol = ip::tcp;
+#endif
+    basic_socket_acceptor<Protocol> acceptor_;
+    basic_stream_socket<Protocol> socket_;
     rpc::detail::thread_group loop_workers_;
     std::vector<std::shared_ptr<server_session>> sessions_;
     std::atomic_bool suppress_exceptions_;
@@ -108,21 +125,32 @@ struct server::impl {
 
 RPCLIB_CREATE_LOG_CHANNEL(server)
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
 server::server(uint16_t port)
     : pimpl(new server::impl(this, port)),
       disp_(std::make_shared<dispatcher>()) {
     LOG_INFO("Created server on localhost:{}", port);
     pimpl->start_accept();
 }
+#endif
 
 server::server(server &&other) noexcept { *this = std::move(other); }
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+server::server(std::string const &socketName)
+    : pimpl(new server::impl(this, socketName)),
+      disp_(std::make_shared<dispatcher>()) {
+    LOG_INFO("Created server on address {}", socketName);
+    pimpl->start_accept();
+}
+#else
 server::server(std::string const &address, uint16_t port)
     : pimpl(new server::impl(this, address, port)),
       disp_(std::make_shared<dispatcher>()) {
     LOG_INFO("Created server on address {}:{}", address, port);
     pimpl->start_accept();
 }
+#endif
 
 server::~server() {
     if (pimpl) {
@@ -157,7 +185,9 @@ void server::async_run(std::size_t worker_threads) {
 
 void server::stop() { pimpl->stop(); }
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
 unsigned short server::port() const { return pimpl->port(); }
+#endif
 
 void server::close_sessions() { pimpl->close_sessions(); }
 

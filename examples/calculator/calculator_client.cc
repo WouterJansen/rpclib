@@ -4,7 +4,11 @@
 #include "rpc/rpc_error.h"
 
 int main() {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    rpc::client c("/tmp/calculator-socket");
+#else
     rpc::client c("localhost", rpc::constants::DEFAULT_PORT);
+#endif
 
     try {
         std::cout << "add(2, 3) = ";

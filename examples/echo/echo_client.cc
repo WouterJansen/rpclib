@@ -3,7 +3,11 @@
 #include <iostream>
 
 int main() {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    rpc::client c("/tmp/echo-socket");
+#else
     rpc::client c("localhost", rpc::constants::DEFAULT_PORT);
+#endif
 
     std::string text;
     while (std::getline(std::cin, text)) {

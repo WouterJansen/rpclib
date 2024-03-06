@@ -11,12 +11,16 @@
 
 using namespace rpc::testutils;
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+#define ENDPOINT "/tmp/test.socket"
+#else
 static RPCLIB_CONSTEXPR uint16_t test_port = rpc::constants::DEFAULT_PORT;
-
+#define ENDPOINT "127.0.0.1", test_port
+#endif
 class server_workers_test : public testing::Test {
 public:
     server_workers_test()
-        : s("127.0.0.1", test_port), long_count(0), short_count(0) {
+        : s(ENDPOINT), long_count(0), short_count(0) {
         s.bind("long_func", [this]() {
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
             ++long_count;
@@ -35,7 +39,7 @@ protected:
 TEST_F(server_workers_test, single_worker) {
     const std::size_t workers = 1;
     s.async_run(workers);
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     auto ft_long = c.async_call("long_func");
     auto ft_short = c.async_call("short_func");
     ft_short.wait();
@@ -51,7 +55,7 @@ TEST_F(server_workers_test, single_worker) {
 TEST_F(server_workers_test, multiple_workers) {
     const std::size_t workers = 2;
     s.async_run(workers);
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     auto ft_long = c.async_call("long_func");
     auto ft_short = c.async_call("short_func");
     ft_short.wait();
@@ -66,7 +70,7 @@ TEST_F(server_workers_test, multiple_workers) {
 
 class server_error_handling : public testing::Test {
 public:
-    server_error_handling() : s("127.0.0.1", test_port) {
+    server_error_handling() : s(ENDPOINT) {
         s.bind("blue", []() {
             throw std::runtime_error("I'm blue daba dee daba die");
         });
@@ -80,7 +84,7 @@ protected:
 
 #ifndef RPCLIB_WIN32
 TEST_F(server_error_handling, no_suppress) {
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     s.suppress_exceptions(false);
     EXPECT_DEATH({ c.call("blue"); }, "");
     EXPECT_DEATH({ c.call("red"); }, "");
@@ -89,7 +93,7 @@ TEST_F(server_error_handling, no_suppress) {
 
 TEST_F(server_error_handling, suppress) {
     s.suppress_exceptions(true);
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     // this seems like the opposite check, but the client throwing
     // the exception means that it reached the other side, i.e.
     // the server suppressed it.
@@ -101,7 +105,7 @@ TEST_F(server_error_handling, suppress) {
 
 TEST_F(server_error_handling, suppress_right_msg) {
     s.suppress_exceptions(true);
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
 
     try {
         c.call("blue");
@@ -124,7 +128,7 @@ TEST_F(server_error_handling, suppress_right_msg) {
 
 TEST_F(server_error_handling, no_such_method_right_msg) {
     s.suppress_exceptions(true);
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     try {
         c.call("green");
         FAIL() << "There was no exception thrown.";
@@ -136,7 +140,7 @@ TEST_F(server_error_handling, no_such_method_right_msg) {
 
 TEST_F(server_error_handling, wrong_arg_count_void_zeroarg) {
     s.suppress_exceptions(true);
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     try {
         c.call("blue", 1);
         FAIL() << "There was no exception thrown.";
@@ -149,7 +153,7 @@ TEST_F(server_error_handling, wrong_arg_count_void_zeroarg) {
 class dispatch_unicode : public testing::Test {
 public:
     dispatch_unicode()
-        : s("127.0.0.1", test_port), str_utf8("árvíztűrő tükörfúrógép") {
+        : s(ENDPOINT), str_utf8("árvíztűrő tükörfúrógép") {
         s.bind("utf", [](std::string const &p) { return p; });
         s.async_run();
     }
@@ -160,18 +164,20 @@ protected:
 };
 
 TEST_F(dispatch_unicode, narrow_unicode) {
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     EXPECT_EQ(str_utf8, c.call("utf", str_utf8).as<std::string>());
 }
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
 TEST(server_misc, single_param_ctor) {
     rpc::server s(test_port);
     s.async_run();
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
 }
+#endif
 
 TEST(server_misc, server_is_moveable) {
-    rpc::server s(test_port);
+    rpc::server s(ENDPOINT);
     s.bind("foo", [](){});
     std::vector<rpc::server> vec;
     vec.push_back(std::move(s));

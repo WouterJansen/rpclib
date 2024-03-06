@@ -19,8 +19,13 @@ namespace detail {
 //! \brief Common logic for classes that have a write queue with async writing.
 class async_writer : public std::enable_shared_from_this<async_writer> {
 public:
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    using socket_t = RPCLIB_ASIO::local::stream_protocol::socket;
+#else
+    using socket_t = RPCLIB_ASIO::ip::tcp::socket;
+#endif
     async_writer(RPCLIB_ASIO::io_service *io,
-                 RPCLIB_ASIO::ip::tcp::socket socket)
+                 socket_t socket)
         : socket_(std::move(socket)), write_strand_(*io), exit_(false) {}
 
     void close() {
@@ -31,7 +36,7 @@ public:
             LOG_INFO("Closing socket");
             std::error_code e;
             socket_.shutdown(
-                RPCLIB_ASIO::ip::tcp::socket::shutdown_both, e);
+                socket_t::shutdown_both, e);
             if (e) {
                 LOG_WARN("std::system_error during socket shutdown. "
                             "Code: {}. Message: {}", e.value(), e.message());
@@ -79,7 +84,7 @@ public:
         do_write();
     }
 
-    RPCLIB_ASIO::ip::tcp::socket& socket() {
+    socket_t& socket() {
         return socket_;
     }
 
@@ -94,7 +99,7 @@ protected:
     }
 
 private:
-    RPCLIB_ASIO::ip::tcp::socket socket_;
+    socket_t socket_;
     RPCLIB_ASIO::strand write_strand_;
     std::atomic_bool exit_{false};
     std::deque<RPCLIB_MSGPACK::sbuffer> write_queue_;

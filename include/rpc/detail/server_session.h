@@ -23,7 +23,7 @@ namespace detail {
 class server_session : public async_writer {
 public:
     server_session(server *srv, RPCLIB_ASIO::io_service *io,
-                   RPCLIB_ASIO::ip::tcp::socket socket,
+                   socket_t socket,
                    std::shared_ptr<dispatcher> disp, bool suppress_exceptions);
     void start();
 

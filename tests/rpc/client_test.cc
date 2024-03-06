@@ -11,9 +11,16 @@
 
 using namespace rpc::testutils;
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+#define ENDPOINT "/tmp/test.sock"
+#else
+static RPCLIB_CONSTEXPR uint16_t test_port = rpc::constants::DEFAULT_PORT;
+#define ENDPOINT "127.0.0.1", test_port
+#endif
+
 class client_test : public testing::Test {
 public:
-    client_test() : s("127.0.0.1", test_port), is_running_(false) {
+    client_test() : s(ENDPOINT), is_running_(false) {
         s.bind("dummy_void_zeroarg", [this]() { md.dummy_void_zeroarg(); });
         s.bind("dummy_void_singlearg",
                [this](int x) { md.dummy_void_singlearg(x); });
@@ -27,21 +34,20 @@ public:
     }
 
 protected:
-    static RPCLIB_CONSTEXPR uint16_t test_port = rpc::constants::DEFAULT_PORT;
     MockDummy md;
     rpc::server s;
     std::atomic_bool is_running_;
 };
 
 TEST_F(client_test, instantiation) {
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
 }
 
 TEST_F(client_test, call) {
     EXPECT_CALL(md, dummy_void_zeroarg());
     EXPECT_CALL(md, dummy_void_singlearg(5));
     EXPECT_CALL(md, dummy_void_multiarg(5, 6));
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
     client.call("dummy_void_zeroarg");
     client.call("dummy_void_singlearg", 5);
     client.call("dummy_void_multiarg", 5, 6);
@@ -49,14 +55,14 @@ TEST_F(client_test, call) {
 
 TEST_F(client_test, notification) {
     EXPECT_CALL(md, dummy_void_zeroarg());
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
     client.send("dummy_void_zeroarg");
     client.wait_all_responses();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 TEST_F(client_test, large_return) {
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
     std::size_t blob_size = 2 << 10 << 10;
     for (int i = 0; i < 4; ++i) {
         client.call("large_return", blob_size);
@@ -66,7 +72,7 @@ TEST_F(client_test, large_return) {
 }
 
 TEST_F(client_test, timeout_setting_works) {
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
     EXPECT_FALSE(client.get_timeout());
 
     const uint64_t short_timeout = 50;
@@ -81,7 +87,7 @@ TEST_F(client_test, timeout_setting_works) {
 }
 
 TEST_F(client_test, timeout_right_msg) {
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
     const uint64_t short_timeout = 50;
     try {
         client.set_timeout(short_timeout);
@@ -98,7 +104,7 @@ TEST_F(client_test, timeout_right_msg) {
 }
 
 TEST_F(client_test, timeout_clear) {
-    rpc::client client("127.0.0.1", test_port);
+    rpc::client client(ENDPOINT);
     EXPECT_FALSE(client.get_timeout());
     client.set_timeout(50);
     EXPECT_EQ(50, *client.get_timeout());
@@ -106,6 +112,7 @@ TEST_F(client_test, timeout_clear) {
     EXPECT_FALSE(client.get_timeout());
 }
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
 // Only enable this test on linux
 // It seems like the connection error is not detected on windows
 TEST_F(client_test, bad_ip) {
@@ -119,9 +126,10 @@ TEST_F(client_test, bad_ip) {
     // throw is enough for windows
 #endif
 }
+#endif
 
 TEST(client_test2, timeout_while_connection) {
-    rpc::client client("localhost", rpc::constants::DEFAULT_PORT);
+    rpc::client client(ENDPOINT);
     client.set_timeout(50);
 #ifdef __linux__
     // this client never connects, so this tests the timout in wait_conn()

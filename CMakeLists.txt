@@ -29,6 +29,11 @@ option(RPCLIB_ENABLE_COVERAGE
 option(RPCLIB_MSVC_STATIC_RUNTIME 
   "MSVC only: build with /MT instead of /MD" 
   OFF)
+if (NOT WIN32)
+  option(RPCLIB_USE_LOCAL_SOCKETS
+    "Use Unix domain for transport instead of TCP/IP"
+    OFF)
+endif()
 
 #
 # Other configuration values
@@ -152,6 +157,9 @@ target_compile_definitions(${PROJECT_NAME}
     "RPCLIB_MSGPACK=clmdep_msgpack"
   )
 
+if (RPCLIB_USE_LOCAL_SOCKETS)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC "RPCLIB_USE_LOCAL_SOCKETS")
+endif()
 if(RPCLIB_ENABLE_LOGGING)
   target_compile_definitions(${PROJECT_NAME} PRIVATE "RPCLIB_ENABLE_LOGGING")
 endif()

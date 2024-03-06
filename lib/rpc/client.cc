@@ -27,31 +27,56 @@ static constexpr uint32_t default_buffer_size =
     rpc::constants::DEFAULT_BUFFER_SIZE;
 
 struct client::impl {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    impl(client* parent, std::string const& socketName)
+#else
     impl(client *parent, std::string const &addr, uint16_t port)
+#endif
         : parent_(parent),
           io_(),
           strand_(io_),
           call_idx_(0),
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+          socketName_(socketName),
+#else
           addr_(addr),
           port_(port),
+#endif
           is_connected_(false),
           state_(client::connection_state::initial),
-          writer_(std::make_shared<detail::async_writer>(
-              &io_, RPCLIB_ASIO::ip::tcp::socket(io_))),
+          writer_(std::make_shared<detail::async_writer>(&io_,
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+              RPCLIB_ASIO::local::stream_protocol::socket(io_))),
+#else
+              RPCLIB_ASIO::ip::tcp::socket(io_))),
+#endif
           timeout_(nonstd::nullopt),
           connection_ec_(nonstd::nullopt) {
         pac_.reserve_buffer(default_buffer_size);
     }
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    void do_connect(local::basic_endpoint<local::stream_protocol> endpoint) {
+#else
     void do_connect(tcp::resolver::iterator endpoint_iterator) {
+#endif
         LOG_INFO("Initiating connection.");
         connection_ec_ = nonstd::nullopt;
         RPCLIB_ASIO::async_connect(
-            writer_->socket(), endpoint_iterator,
-            [this](std::error_code ec, tcp::resolver::iterator) {
+            writer_->socket(), 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+            &endpoint, &endpoint+1,
+#else
+            endpoint_iterator,
+#endif
+            [this](std::error_code ec, ...) {
                 if (!ec) {
                     std::unique_lock<std::mutex> lock(mut_connection_finished_);
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+                    LOG_INFO("Client connected to {}", socketName_);
+#else
                     LOG_INFO("Client connected to {}:{}", addr_, port_);
+#endif
                     is_connected_ = true;
                     state_ = client::connection_state::connected;
                     conn_finished_.notify_all();
@@ -148,8 +173,12 @@ struct client::impl {
     RPCLIB_ASIO::strand strand_;
     std::atomic<int> call_idx_; /// The index of the last call made
     std::unordered_map<uint32_t, call_t> ongoing_calls_;
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    std::string socketName_;
+#else
     std::string addr_;
     uint16_t port_;
+#endif
     RPCLIB_MSGPACK::unpacker pac_;
     std::atomic_bool is_connected_;
     std::condition_variable conn_finished_;
@@ -162,6 +191,18 @@ struct client::impl {
     RPCLIB_CREATE_LOG_CHANNEL(client)
 };
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+client::client(std::string const &socketName)
+    : pimpl(new client::impl(this, socketName)) {
+    pimpl->do_connect(local::stream_protocol::endpoint(socketName));
+    std::thread io_thread([this]() {
+        RPCLIB_CREATE_LOG_CHANNEL(client)
+        name_thread("client");
+        pimpl->io_.run();
+    });
+    pimpl->io_thread_ = std::move(io_thread);
+}
+#else
 client::client(std::string const &addr, uint16_t port)
     : pimpl(new client::impl(this, addr, port)) {
     tcp::resolver resolver(pimpl->io_);
@@ -175,6 +216,7 @@ client::client(std::string const &addr, uint16_t port)
     });
     pimpl->io_thread_ = std::move(io_thread);
 }
+#endif
 
 void client::wait_conn() {
     std::unique_lock<std::mutex> lock(pimpl->mut_connection_finished_);
@@ -187,9 +229,15 @@ void client::wait_conn() {
             auto result = pimpl->conn_finished_.wait_for(
                 lock, std::chrono::milliseconds(*timeout));
             if (result == std::cv_status::timeout) {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+                throw rpc::timeout(RPCLIB_FMT::format(
+                    "Timeout of {}ms while connecting to {}", *get_timeout(),
+                    pimpl->socketName_));
+#else
                 throw rpc::timeout(RPCLIB_FMT::format(
                     "Timeout of {}ms while connecting to {}:{}", *get_timeout(),
                     pimpl->addr_, pimpl->port_));
+#endif
             }
         } else {
             pimpl->conn_finished_.wait(lock);

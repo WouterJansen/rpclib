@@ -11,11 +11,16 @@
 
 using namespace rpc::testutils;
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+#define ENDPOINT "/tmp/test.socket"
+#else
 static RPCLIB_CONSTEXPR uint16_t test_port = rpc::constants::DEFAULT_PORT;
+#define ENDPOINT "127.0.0.1", test_port
+#endif
 
 class this_handler_test : public testing::Test {
 public:
-    this_handler_test() : s(test_port) {}
+    this_handler_test() : s(ENDPOINT) {}
 
 protected:
     rpc::server s;
@@ -28,7 +33,7 @@ TEST_F(this_handler_test, set_error) {
     });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     EXPECT_THROW(c.call("errfunc"), std::runtime_error);
     EXPECT_THROW(c.call("errfunc"), rpc::rpc_error);
 
@@ -49,7 +54,7 @@ TEST_F(this_handler_test, error_obj) {
     });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     EXPECT_THROW(c.call("customerr"), std::runtime_error);
     EXPECT_THROW(c.call("customerr"), rpc::rpc_error);
 
@@ -72,7 +77,7 @@ TEST_F(this_handler_test, set_special_response) {
     });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     EXPECT_EQ(c.call("spec_func", false).as<int>(), 5);
     EXPECT_EQ(c.call("spec_func", true).as<std::string>(), text);
     EXPECT_THROW(c.call("spec_func", true).as<int>(), RPCLIB_MSGPACK::type_error);
@@ -82,7 +87,7 @@ TEST_F(this_handler_test, disable_response) {
     s.bind("noresp", []() { rpc::this_handler().disable_response(); });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     auto f = c.async_call("noresp");
     EXPECT_EQ(f.wait_for(std::chrono::milliseconds(50)), std::future_status::timeout);
 }
@@ -91,7 +96,7 @@ TEST_F(this_handler_test, enable_response) {
     s.bind("noresp", []() { rpc::this_handler().disable_response(); });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     auto f = c.async_call("noresp");
     EXPECT_EQ(f.wait_for(std::chrono::milliseconds(50)), std::future_status::timeout);
 }

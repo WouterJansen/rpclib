@@ -11,14 +11,19 @@
 using namespace rpc::testutils;
 using namespace rpc;
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+#define ENDPOINT "/tmp/test.socket"
+#else
 static RPCLIB_CONSTEXPR uint16_t test_port = rpc::constants::DEFAULT_PORT;
+#define ENDPOINT "127.0.0.1", test_port
+#endif
 
 class this_server_test : public testing::Test {
 public:
     this_server_test()
-        : s(test_port),
-          c1("127.0.0.1", test_port),
-          c2("127.0.0.1", test_port) {}
+        : s(ENDPOINT),
+          c1(ENDPOINT),
+          c2(ENDPOINT) {}
 
 protected:
     rpc::server s;

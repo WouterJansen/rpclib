@@ -27,11 +27,15 @@ class server_session;
 //! This class is not copyable, but moveable.
 class server {
 public:
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    explicit server(std::string const& socketName);
+#else
     //! \brief Constructs a server that listens on the localhost on the
     //! specified port.
     //!
     //! \param port The port number to listen on.
     explicit server(uint16_t port);
+#endif
 
     //! \brief Move constructor. This is implemented by calling the
     //! move assignment operator.
@@ -39,6 +43,7 @@ public:
     //! \param other The other instance to move from.
     server(server&& other) noexcept;
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
     //! \brief Constructs a server that listens on the specified address on
     //! the specified port.
     //!
@@ -46,6 +51,7 @@ public:
     //! network adapaters control the given address.
     //! \param port The port number to listen on.
     server(std::string const &address, uint16_t port);
+#endif
 
     //! \brief Destructor.
     //!
@@ -122,9 +128,11 @@ public:
     //! \note This should not be called from worker threads.
     void stop();
 
+#ifndef RPCLIB_USE_LOCAL_SOCKETS
     //! \brief Returns port
     //! \note The port
     unsigned short port() const;
+#endif
 
     //! \brief Closes all sessions gracefully.
     void close_sessions();

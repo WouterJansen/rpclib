@@ -24,7 +24,11 @@ struct multiplier {
 };
 
 int main() {
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    rpc::server srv("/tmp/calculator-socket");
+#else
     rpc::server srv(rpc::constants::DEFAULT_PORT);
+#endif
     subtractor s;
     multiplier m;
 

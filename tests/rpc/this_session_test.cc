@@ -12,11 +12,16 @@
 using namespace rpc::testutils;
 using namespace rpc;
 
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+#define ENDPOINT "/tmp/test.socket"
+#else
 static RPCLIB_CONSTEXPR uint16_t test_port = rpc::constants::DEFAULT_PORT;
+#define ENDPOINT "127.0.0.1", test_port
+#endif
 
 class this_session_test : public testing::Test {
 public:
-    this_session_test() : s(test_port) {}
+    this_session_test() : s(ENDPOINT) {}
 
 protected:
     rpc::server s;
@@ -26,7 +31,7 @@ TEST_F(this_session_test, post_exit) {
     s.bind("exit", []() { rpc::this_session().post_exit(); });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
     c.call("exit");
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto f = c.async_call("exit");
@@ -42,8 +47,8 @@ TEST_F(this_session_test, post_exit_specific_to_session) {
     });
     s.async_run();
 
-    rpc::client c("127.0.0.1", test_port);
-    rpc::client c2("127.0.0.1", test_port);
+    rpc::client c(ENDPOINT);
+    rpc::client c2(ENDPOINT);
     c2.call("exit", false);
     c.call("exit", true);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

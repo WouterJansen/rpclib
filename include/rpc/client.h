@@ -22,6 +22,9 @@ namespace rpc {
 //! to the given server asynchronically and disconnects when it is destroyed.
 class client {
 public:
+#ifdef RPCLIB_USE_LOCAL_SOCKETS
+    client(std::string const& socketName);
+#else
     //! \brief Constructs a client.
     //!
     //! When a client is constructed, it initiates a connection
@@ -33,6 +36,7 @@ public:
     //! IP address or a host name, too.
     //! \param port The port on the server to connect to.
     client(std::string const &addr, uint16_t port);
+#endif
 
     //! \cond DOXYGEN_SKIP
     client(client const &) = delete;
