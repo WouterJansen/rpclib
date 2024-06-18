@@ -4,17 +4,8 @@ This chapter details the steps of getting everything in place to be able to use 
 
 ### Compiler
 
-`rpclib` is compatible with C++11, but it's also able to take advantage of C++14 if the compiler
-supports it. At the moment, the oldest versions of the major compilers that are known to work
-are the following:
+`rpclib` is compatible with C++14, C++17 and C++20.
 
-  * g++ 4.8
-  * clang++ 3.7
-  * MSVC 2015 Update 3
-
-Newer versions of these compilers are expected to work, of course.
-
-Since C++11 support was introduced, it might be possible to compile rpclib with even older compilers.
 If it builds and the unit tests run without an error then it should be fine to use (please report older compilers
 that do compile but produce failing unit tests to the issue tracker!)
 
