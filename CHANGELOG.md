@@ -1,5 +1,11 @@
 # Changelog
 
+### 2.3.1
+Unofficial patch for 2.3.0 to make it compatible with C++17 and C++20, this drops support for C++11. Based on the work of [leg0](https://github.com/rpclib/rpclib/pull/315).
+
+*Fixes*:
+  * Updated googletest to 1.14
+
 ### 2.3.0
 
 This release fixes various issues.

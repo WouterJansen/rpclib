@@ -2,8 +2,7 @@
 
 Welcome! `rpclib` is a msgpack-rpc library written using modern C++.
 The goal of this library is to provide a simple, no-nonsense RPC solution.
-`rpclib` is compatible with C++11 and C++14 (currently the difference is that it compiles slightly
-faster in C++14 mode).
+`rpclib` is compatible with C++14, C++17 and C++20.
 
 ## What does it look like?
 
